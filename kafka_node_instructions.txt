@@ -1,0 +1,50 @@
+
+# Instruções para configurar e rodar Apache Kafka com Node.js
+
+## 1. Baixar e instalar o Apache Kafka
+
+1. Baixe o Apache Kafka no seguinte link:
+   - [Apache Kafka Downloads](https://kafka.apache.org/downloads)
+
+2. Extraia o arquivo em um diretório de sua preferência.
+
+3. No terminal, navegue até o diretório extraído e inicie o **Zookeeper** com o comando:
+   ```bash
+   bin/zookeeper-server-start.sh config/zookeeper.properties
+   ```
+
+4. Em outro terminal, inicie o **Kafka Broker**:
+   ```bash
+   bin/kafka-server-start.sh config/server.properties
+   ```
+
+## 2. Criar o Tópico no Kafka
+
+1. Para criar um tópico no Kafka, execute o seguinte comando no terminal:
+   ```bash
+   bin/kafka-topics.sh --create --topic reservas_sala --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
+   ```
+
+## 3. Configuração do Projeto Node.js
+
+1. No diretório de seu projeto, inicie um novo projeto Node.js:
+   ```bash
+   npm init -y
+   ```
+
+2. Instale o pacote `kafka-node` com o comando:
+   ```bash
+   npm install kafka-node
+   ```
+
+## 6. Executar Produtor e Consumidor
+
+1. Primeiro, execute o consumidor para que ele fique ouvindo o tópico `reservas_sala`:
+   ```bash
+   node consumer.js
+   ```
+
+2. Depois, execute o produtor para enviar uma nova reserva:
+   ```bash
+   node producer.js
+   ``'
