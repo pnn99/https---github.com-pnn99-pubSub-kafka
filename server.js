@@ -6,6 +6,10 @@ const reservationRoutes = require('./src/routes/reservationRoutes'); // Importa 
 
 const app = express();
 app.use(bodyParser.json());
+// Rota principal
+app.get('/', (req, res) => {
+    res.send('Bem-vindo ao sistema de reserva de salas!');
+});
 
 app.use('/auth', authRoutes);
 app.use('/kafka', kafkaRoutes);
