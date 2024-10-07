@@ -40,8 +40,12 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('email').value;
             const password = document.getElementById('password').value;
+
+            // Depuração: Verifica se os campos estão sendo preenchidos corretamente
+            console.log('Username:', username);
+            console.log('Password:', password);
 
             try {
                 const response = await fetch('/auth/login', {
@@ -49,22 +53,23 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({ username, password }), // Verifica se os dados estão sendo enviados corretamente
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     alert('Login realizado com sucesso!');
-                    window.location.href = 'dashboard.html'; // Redireciona para o dashboard após o login
+                    window.location.href = 'dashboard.html';
                 } else {
-                    alert(`Erro: ${data.message}`);
+                    const errorMessage = data.message || 'Erro desconhecido. Tente novamente.';
+                    alert(`Erro: ${errorMessage}`);
                 }
             } catch (error) {
                 console.error('Erro:', error);
-                alert('Ocorreu um erro. Tente novamente.');
             }
         });
+
     </script>
 </body>
 </html>

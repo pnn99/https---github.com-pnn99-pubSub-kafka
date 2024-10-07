@@ -6,9 +6,11 @@ const reservationRoutes = require('./src/routes/reservationRoutes'); // Importa 
 
 const app = express();
 app.use(bodyParser.json());
+app.use(express.static('public')); // Servir arquivos estáticos da pasta public
+
 // Rota principal
 app.get('/', (req, res) => {
-    res.send('Bem-vindo ao sistema de reserva de salas!');
+    res.sendFile(__dirname + '/public/login.html'); // Página inicial é o login
 });
 
 app.use('/auth', authRoutes);

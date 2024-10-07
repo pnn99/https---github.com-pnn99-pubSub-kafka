@@ -1,9 +1,9 @@
 const db = require('../config/database');
 
 // Função para criar um novo usuário
-const createUser = (username, password, callback) => {
+const createUser = (username, hashedPassword, callback) => {
     const query = `INSERT INTO users (username, password) VALUES (?, ?)`;
-    db.run(query, [username, password], function (err) {
+    db.run(query, [username, hashedPassword], function (err) {
         if (err) {
             return callback(err);
         }
@@ -18,7 +18,7 @@ const findUserByUsername = (username, callback) => {
         if (err) {
             return callback(err);
         }
-        callback(null, row);
+        callback(null, row); // Retorna o usuário encontrado
     });
 };
 

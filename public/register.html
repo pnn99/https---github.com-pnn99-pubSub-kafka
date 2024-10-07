@@ -40,7 +40,7 @@
         registerForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const email = document.getElementById('email').value;
+            const username = document.getElementById('email').value;  // Certifique-se de que o ID é 'email'
             const password = document.getElementById('password').value;
 
             try {
@@ -49,14 +49,14 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ email, password }),
+                    body: JSON.stringify({ username, password }),  // Certifique-se de que 'username' e 'password' estão corretos
                 });
 
                 const data = await response.json();
 
                 if (response.ok) {
                     alert('Registro realizado com sucesso!');
-                    window.location.href = 'login.html'; // Redireciona para a página de login após o registro
+                    window.location.href = 'login.html'; // Redireciona para a página de login
                 } else {
                     alert(`Erro: ${data.message}`);
                 }
@@ -65,6 +65,7 @@
                 alert('Ocorreu um erro. Tente novamente.');
             }
         });
+
     </script>
 </body>
 </html>
