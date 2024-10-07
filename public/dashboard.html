@@ -6,6 +6,7 @@
     <title>Reserva de Salas</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container mt-5">
@@ -42,8 +43,8 @@
             <label class="form-label">Horários Disponíveis:</label>
             <div class="d-grid gap-2">
                 <button class="btn btn-success time-btn" data-time="7:00-8:40">7:00 - 8:40</button>
-                <button class="btn btn-success time-btn" data-time="8:40-10:20">8:40 - 10:20</button>
-                <button class="btn btn-success time-btn" data-time="10:20-12:00">10:20 - 12:00</button>
+                <button class="btn btn-success time-btn" data-time="8:40-10:20">8:50 - 10:30</button>
+                <button class="btn btn-success time-btn" data-time="10:20-12:00">10:40 - 12:20</button>
             </div>
         </div>
     </div>
@@ -76,13 +77,11 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
           </div>
           <div class="modal-body">
-            <p><strong>Nome do Usuário:</strong> <span id="user-name"></span></p>
+            <p><strong>Email do Usuário:</strong> <span id="user-email"></span></p>
             <p><strong>Laboratório:</strong> <span id="lab-room"></span></p>
-            <p><strong>Andar:</strong> <span id="room-floor"></span></p>
             <p><strong>Horário Reservado:</strong> <span id="reserved-time"></span></p>
           </div>
           <div class="modal-footer">
-            <button type="button" id="cancel-reservation" class="btn btn-danger">Cancelar Reserva</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
           </div>
         </div>
@@ -96,7 +95,7 @@
             // Inicializa o calendário Flatpickr
             flatpickr("#calendar-input", {
                 enableTime: false,
-                dateFormat: "Y-m-d",
+                dateFormat: "d-m-Y",
                 onChange: (selectedDates, dateStr) => {
                     console.log("Data selecionada: ", dateStr);
                 }
@@ -112,8 +111,34 @@
             document.querySelectorAll(".room-btn").forEach(btn => {
                 btn.addEventListener("click", function() {
                     selectedRoom = this.dataset.room;
+
+                    // Carregar os horários disponíveis quando uma sala é selecionada
+                    loadAvailableSlots(selectedRoom);
                 });
             });
+
+            function loadAvailableSlots(selectedRoom) {
+              const slotsContainer = document.getElementById('available-slots');
+              slotsContainer.innerHTML = ''; // Limpa os slots disponíveis
+              const selectedDayOfWeek = document.getElementById('calendar-input').value;  // Use o valor do calendário
+          
+              fetch(`/reservations/reserved-slots?dayOfWeek=${selectedDayOfWeek}&room=${selectedRoom}`)
+                  .then(response => response.json())
+                  .then(reservedSlots => {
+                      // Exibir horários disponíveis
+                      for (let hour = 7; hour < 20; hour++) {
+                          const slot = document.createElement('button');
+                          slot.className = 'time-slot ' + (reservedSlots.includes(`${hour}:00`) ? 'reserved' : 'available');
+                          slot.innerText = `${hour}:00`;
+                          slot.onclick = () => reserveSlot(slot); // Supondo que reserveSlot esteja definido
+                          slotsContainer.appendChild(slot);
+                      }
+                  })
+                  .catch(error => {
+                      console.error('Erro ao carregar horários:', error);
+                  });
+            }
+          
 
             document.querySelectorAll(".time-btn").forEach(btn => {
                 btn.addEventListener("click", function() {
@@ -124,15 +149,50 @@
                 });
             });
 
-            document.getElementById("confirm-reservation").addEventListener("click", () => {
-                // Aqui seria enviada a requisição de reserva para o backend
-                document.getElementById("user-name").innerText = "Nome do Usuário"; // Substitua com o nome real
-                document.getElementById("lab-room").innerText = selectedRoom;
-                document.getElementById("room-floor").innerText = "Andar"; // Substitua com o andar real
-                document.getElementById("reserved-time").innerText = selectedTime;
-                new bootstrap.Modal(document.getElementById("receipt-modal")).show();
-                bootstrap.Modal.getInstance(document.getElementById("confirm-modal")).hide();
-            });
+            document.getElementById('confirm-reservation').addEventListener('click', async () => {
+              const selectedRoom = document.querySelector('.room-btn') ? document.querySelector('.room-btn').dataset.room : null;
+              const selectedTimeSlot = document.querySelector('.time-btn') ? document.querySelector('.time-btn').dataset.time : null;
+              const selectedDayOfWeek = document.getElementById('calendar-input').value;  // Use o valor do calendário
+              const userEmail = "user@example.com"; // Aqui você deve usar a variável que contém o email do usuário logado
+          
+              console.log('Dados capturados:', { selectedRoom, selectedTimeSlot, selectedDayOfWeek });
+          
+              if (!selectedRoom || !selectedTimeSlot || !selectedDayOfWeek) {
+                  alert('Por favor, selecione todos os campos antes de confirmar.');
+                  return;
+              }
+          
+              try {
+                  const response = await fetch('/reservations', {
+                      method: 'POST',
+                      headers: {
+                          'Content-Type': 'application/json',
+                      },
+                      body: JSON.stringify({
+                          dayOfWeek: selectedDayOfWeek,
+                          room: selectedRoom,
+                          timeSlot: selectedTimeSlot
+                      })
+                  });
+          
+                  const data = await response.json();
+                  if (response.ok) {
+                      // Atualiza o extrato com os dados da reserva
+                      document.getElementById('user-email').innerText = userEmail;
+                      document.getElementById('lab-room').innerText = selectedRoom;
+                      document.getElementById('reserved-time').innerText = selectedTimeSlot;
+          
+                      // Mostra o modal do extrato
+                      new bootstrap.Modal(document.getElementById('receipt-modal')).show();
+                  } else {
+                      alert(`Erro: ${data.error}`);
+                  }
+              } catch (error) {
+                  console.error('Erro:', error);
+              }
+          });
+          
+
         });
     </script>
 </body>
