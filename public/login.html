@@ -36,31 +36,34 @@
     </div>
 
     <script>
-        document.getElementById('login-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Capturar dados e fazer o login via requisição AJAX
+        const loginForm = document.getElementById('login-form');
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            fetch('http://localhost:3000/login', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.token) {
-                    alert('Login bem-sucedido!');
-                    // Armazena o token e redireciona o usuário
-                    localStorage.setItem('token', data.token);
-                    window.location.href = 'dashboard.html'; // Redireciona para a página principal
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Login realizado com sucesso!');
+                    window.location.href = 'dashboard.html'; // Redireciona para o dashboard após o login
                 } else {
-                    alert('Falha no login: ' + data.message);
+                    alert(`Erro: ${data.message}`);
                 }
-            })
-            .catch(error => console.error('Erro:', error));
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro. Tente novamente.');
+            }
         });
     </script>
 </body>

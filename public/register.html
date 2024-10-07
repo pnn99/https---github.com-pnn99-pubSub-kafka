@@ -36,29 +36,34 @@
     </div>
 
     <script>
-        document.getElementById('register-form').addEventListener('submit', function(event) {
-            event.preventDefault();
-            // Capturar dados e fazer o registro via requisição AJAX
+        const registerForm = document.getElementById('register-form');
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
 
-            fetch('http://localhost:3000/register', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ email, password })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.message === 'Usuário criado com sucesso!') {
-                    alert('Registro bem-sucedido!');
-                    window.location.href = 'login.html'; // Redireciona para a página de login
+            try {
+                const response = await fetch('/auth/register', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Registro realizado com sucesso!');
+                    window.location.href = 'login.html'; // Redireciona para a página de login após o registro
                 } else {
-                    alert('Erro no registro: ' + data.message);
+                    alert(`Erro: ${data.message}`);
                 }
-            })
-            .catch(error => console.error('Erro:', error));
+            } catch (error) {
+                console.error('Erro:', error);
+                alert('Ocorreu um erro. Tente novamente.');
+            }
         });
     </script>
 </body>

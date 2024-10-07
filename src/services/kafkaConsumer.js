@@ -1,14 +1,16 @@
 const kafka = require('kafka-node');
+const client = new kafka.KafkaClient();
+const Consumer = kafka.Consumer;
 
-exports.consume = (topic) => {
-    const client = new kafka.KafkaClient();
-    const consumer = new kafka.Consumer(
-        client,
-        [{ topic }],
-        { autoCommit: true }
-    );
+const consumer = new Consumer(
+    client,
+    [{ topic: 'room-reservation-topic', partition: 0 }],
+    { autoCommit: true }
+);
 
-    consumer.on('message', (message) => {
-        console.log('Mensagem recebida:', message);
-    });
-};
+consumer.on('message', function (message) {
+    const reservation = JSON.parse(message.value);
+    console.log('Reserva consumida:', reservation);
+});
+
+module.exports = { consumer };

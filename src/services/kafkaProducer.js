@@ -1,13 +1,14 @@
 const kafka = require('kafka-node');
+const client = new kafka.KafkaClient();
+const Producer = kafka.Producer;
+const producer = new Producer(client);
 
-exports.sendMessage = (topic, message) => {
-    const client = new kafka.KafkaClient();
-    const producer = new kafka.Producer(client);
+producer.on('ready', function () {
+    console.log('Producer está pronto');
+});
 
-    producer.on('ready', () => {
-        producer.send([{ topic, messages: [message] }], (err, data) => {
-            if (err) console.error('Erro ao enviar mensagem:', err);
-            console.log('Mensagem enviada:', data);
-        });
-    });
-};
+producer.on('error', function (err) {
+    console.error('Erro no producer:', err);
+});
+
+module.exports = { producer };
