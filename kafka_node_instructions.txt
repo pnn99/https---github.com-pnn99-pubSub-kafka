@@ -20,7 +20,7 @@
 
 ## 2. Criar o Tópico no Kafka
 
-1. Para criar um tópico no Kafka, execute o seguinte comando no terminal:
+1. Para criar um tópico no Kafka, execute o seguinte comando no terminal(tem mais dois tópicos, de login e registro que não foram listados mas o comando é o mesmo):
    ```bash
    bin/kafka-topics.sh --create --topic room-reservation-topic --bootstrap-server localhost:9092 --partitions 1 --replication-factor 1
    ```
@@ -35,16 +35,8 @@
 2. Instale o pacote `kafka-node` com o comando:
    ```bash
    npm install kafka-node
+   npm install (ira baixar todas as outras dependencias no pacote)
    ```
 
-## 6. Executar Produtor e Consumidor
-
-1. Primeiro, execute o consumidor para que ele fique ouvindo o tópico `reservas_sala`:
-   ```bash
-   node consumer.js
-   ```
-
-2. Depois, execute o produtor para enviar uma nova reserva:
-   ```bash
-   node producer.js
-   ``'
+## 6. Executar 
+1. node server.js
