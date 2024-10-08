@@ -3,10 +3,17 @@ const bodyParser = require('body-parser');
 const authRoutes = require('./src/routes/authRoutes');
 const kafkaRoutes = require('./src/routes/kafkaRoutes');
 const reservationRoutes = require('./src/routes/reservationRoutes'); // Importa as rotas de reserva
+const session = require('express-session');
 
 const app = express();
 app.use(bodyParser.json());
 app.use(express.static('public')); // Servir arquivos estáticos da pasta public
+app.use(session({
+    secret: 'bliu', // Substitua por uma chave secreta real
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false } // Em produção, use true para HTTPS
+}));
 
 // Rota principal
 app.get('/', (req, res) => {

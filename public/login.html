@@ -15,8 +15,8 @@
                         <h3 class="card-title text-center">Login</h3>
                         <form id="login-form">
                             <div class="mb-3">
-                                <label for="email" class="form-label">Email</label>
-                                <input type="email" class="form-control" id="email" required>
+                                <label for="identifier" class="form-label">Email ou RA</label>
+                                <input type="text" class="form-control" id="identifier" required>
                             </div>
                             <div class="mb-3">
                                 <label for="password" class="form-label">Senha</label>
@@ -40,12 +40,8 @@
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
 
-            const username = document.getElementById('email').value;
+            const identifier = document.getElementById('identifier').value;
             const password = document.getElementById('password').value;
-
-            // Depuração: Verifica se os campos estão sendo preenchidos corretamente
-            console.log('Username:', username);
-            console.log('Password:', password);
 
             try {
                 const response = await fetch('/auth/login', {
@@ -53,7 +49,7 @@
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({ username, password }), // Verifica se os dados estão sendo enviados corretamente
+                    body: JSON.stringify({ identifier, password })
                 });
 
                 const data = await response.json();
@@ -62,14 +58,13 @@
                     alert('Login realizado com sucesso!');
                     window.location.href = 'dashboard.html';
                 } else {
-                    const errorMessage = data.message || 'Erro desconhecido. Tente novamente.';
-                    alert(`Erro: ${errorMessage}`);
+                    alert(`Erro: ${data.message}`);
                 }
             } catch (error) {
                 console.error('Erro:', error);
+                alert('Ocorreu um erro. Tente novamente.');
             }
         });
-
     </script>
 </body>
 </html>

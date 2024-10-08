@@ -3,35 +3,48 @@ const moment = require('moment');
 
 // Função para criar uma nova reserva
 const makeReservation = (req, res) => {
-    const { dayOfWeek, room, timeSlot } = req.body;
-
-    console.log('Dados recebidos para reserva:', { dayOfWeek, room, timeSlot });
-
-    if (!dayOfWeek || !room || !timeSlot) {
-        console.log('Faltando campos na reserva');
-        return res.status(400).json({ error: 'Todos os campos são obrigatórios' });
+    
+    if (!req.session.user) {
+        return res.status(401).json({ message: 'Usuário não está logado.' });
     }
 
-    // Verificar se a sala já está reservada
-    const query = `SELECT * FROM reservations WHERE dayOfWeek = ? AND room = ? AND timeSlot = ?`;
-    db.get(query, [dayOfWeek, room, timeSlot], (err, row) => {
+    const { dayOfWeek, room, timeSlot, floor } = req.body;
+    const userName = req.session.user.name;
+    const userRA = req.session.user.ra;
+    const userEmail = req.session.user.email;
+
+
+    console.log('Usuário que reservou:', userName, userRA, userEmail);
+    console.log('Dados recebidos para reserva:', { dayOfWeek, room, timeSlot, floor });
+    
+
+    // Verificar se a sala já está reservada para o dia, horário e andar
+    const query = `SELECT * FROM reservations WHERE dayOfWeek = ? AND room = ? AND timeSlot = ? AND floor = ?`;
+    db.get(query, [dayOfWeek, room, timeSlot, floor], (err, row) => {
         if (row) {
             console.log('Sala já reservada:', row);
-            return res.status(409).json({ error: 'A sala já está reservada para esse horário' });
+            // Retornar uma resposta imediatamente se a sala já está reservada
+            return res.status(409).json({ error: 'A sala já está reservada para esse horário neste andar.' });
         }
 
         // Inserir nova reserva
-        const insertQuery = `INSERT INTO reservations (dayOfWeek, room, timeSlot, createdAt) VALUES (?, ?, ?, ?)`;
-        db.run(insertQuery, [dayOfWeek, room, timeSlot, moment().format()], function (err) {
+        const insertQuery = `INSERT INTO reservations (dayOfWeek, room, timeSlot, floor, createdAt) VALUES (?, ?, ?, ?, ?)`;
+        db.run(insertQuery, [dayOfWeek, room, timeSlot, floor, new Date().toISOString()], function (err) {
             if (err) {
                 console.log('Erro ao fazer reserva:', err);
-                return res.status(500).json({ error: 'Erro ao fazer reserva' });
+                return res.status(500).json({ error: 'Erro ao fazer reserva.' });
             }
+
             console.log('Reserva criada com sucesso:', this.lastID);
-            res.status(201).json({ message: 'Reserva feita com sucesso', reservationId: this.lastID });
+
+
+            // Retornar a resposta de sucesso
+            return res.status(201).json({ message: 'Reserva feita com sucesso!', reservationId: this.lastID });
         });
     });
 };
+
+
 
 // Função para buscar todas as reservas
 const getAllReservations = (req, res) => {
@@ -58,4 +71,4 @@ const getReservedSlots = (req, res) => {
     });
 };
 
-module.exports = { makeReservation, getAllReservations, getReservedSlots };
+module.exports = { makeReservation, getAllReservations, getReservedSlots};

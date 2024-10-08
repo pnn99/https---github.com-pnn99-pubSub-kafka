@@ -1,19 +1,22 @@
-const { createUser, findUserByUsername } = require('../models/userModel');
+const { name } = require('body-parser');
+const { createUser, findUserByEmailOrRA } = require('../models/userModel');
 const bcrypt = require('bcrypt');
 
 // Registrar um novo usuário
 const register = (req, res) => {
-    const { username, password } = req.body; // Certifique-se de que 'username' e 'password' estão corretos
-    if (!username || !password) {
+    const { name, ra, email, password } = req.body;
+
+    if (!name || !ra || !email || !password) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     }
 
-    // Hash da senha antes de salvar no banco de dados
+    // Hash da senha
     const hashedPassword = bcrypt.hashSync(password, 10);
 
-    createUser(username, hashedPassword, (err, user) => {
+    // Criação do usuário
+    createUser(name, ra, email, hashedPassword, (err, user) => {
         if (err) {
-            return res.status(500).json({ message: 'Erro ao criar usuário' });
+            return res.status(500).json({ message: 'Erro ao criar usuário.' });
         }
         res.status(201).json({ message: 'Usuário registrado com sucesso!', user });
     });
@@ -21,39 +24,38 @@ const register = (req, res) => {
 
 // Login do usuário
 const login = (req, res) => {
-    const { username, password } = req.body;
+    const { identifier, password } = req.body; // O identifier pode ser email ou RA
 
-    // Depuração: Verifica se os dados estão sendo recebidos corretamente
-    console.log('Dados recebidos no login:', { username, password });
-
-    if (!username || !password) {
-        console.log('Faltando campos no login');
+    if (!identifier || !password) {
         return res.status(400).json({ message: 'Todos os campos são obrigatórios.' });
     }
 
-    findUserByUsername(username, (err, user) => {
+    findUserByEmailOrRA(identifier, (err, user) => {
         if (err) {
-            console.log('Erro ao buscar usuário no banco de dados:', err);
             return res.status(500).json({ message: 'Erro no servidor.' });
         }
 
         if (!user) {
-            console.log('Usuário não encontrado');
             return res.status(401).json({ message: 'Usuário não encontrado.' });
         }
-
-        // Depuração: Verifica o hash da senha armazenado
-        console.log('Usuário encontrado:', user);
 
         const passwordMatch = bcrypt.compareSync(password, user.password);
 
         if (!passwordMatch) {
-            console.log('Senha incorreta');
             return res.status(401).json({ message: 'Senha incorreta.' });
         }
 
-        console.log('Login bem-sucedido');
+        // Armazenar o usuário logado na sessão
+        req.session.user = {
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            ra: user.ra
+        };
+
+        console.log('Usuário logado:', user.name, user.ra, user.email);
         return res.status(200).json({ message: 'Login bem-sucedido!' });
+        
     });
 };
 
