@@ -41,7 +41,7 @@
         <!-- Parte 3: Seleção de Horário -->
         <div class="my-4">
             <label class="form-label">Horários Disponíveis:</label>
-            <div class="d-grid gap-2">
+            <div id="available-slots" class="d-grid gap-2">
                 <button class="btn btn-success time-btn" data-time="7:00-8:40">7:00 - 8:40</button>
                 <button class="btn btn-success time-btn" data-time="8:40-10:20">8:50 - 10:30</button>
                 <button class="btn btn-success time-btn" data-time="10:20-12:00">10:40 - 12:20</button>
@@ -120,26 +120,39 @@
                 });
             });
 
-            function loadAvailableSlots(selectedRoom, selectedFloor) {
-                const slotsContainer = document.getElementById('available-slots');
-                slotsContainer.innerHTML = ''; // Limpa os slots disponíveis
+            function loadAvailableSlots(selectedRoom) {
                 const selectedDayOfWeek = document.getElementById('calendar-input').value;
+                const selectedFloor = document.getElementById('floor-select').value;
+                const slotsContainer = document.getElementById('available-slots');
+            
+                if (!slotsContainer) {
+                    console.error('Contêiner de horários não encontrado');
+                    return;  // Se o contêiner não for encontrado, encerra a função
+                }
             
                 fetch(`/reservations/reserved-slots?dayOfWeek=${selectedDayOfWeek}&room=${selectedRoom}&floor=${selectedFloor}`)
                     .then(response => response.json())
                     .then(reservedSlots => {
-                        for (let hour = 7; hour < 20; hour++) {
-                            const slot = document.createElement('button');
-                            slot.className = 'time-slot ' + (reservedSlots.includes(`${hour}:00`) ? 'reserved' : 'available');
-                            slot.innerText = `${hour}:00`;
-                            slot.onclick = () => reserveSlot(slot);  // Supondo que reserveSlot esteja definido
-                            slotsContainer.appendChild(slot);
-                        }
+                        // Itera sobre todos os botões de horários e atualiza as classes de acordo com a disponibilidade
+                        document.querySelectorAll(".time-btn").forEach(btn => {
+                            const timeSlot = btn.dataset.time;
+            
+                            if (reservedSlots.includes(timeSlot)) {
+                                // Se o horário estiver reservado, marca o botão como indisponível (vermelho)
+                                btn.classList.remove('btn-success');
+                                btn.classList.add('btn-danger');
+                            } else {
+                                // Se o horário estiver disponível, mantém o botão verde
+                                btn.classList.remove('btn-danger');
+                                btn.classList.add('btn-success');
+                            }
+                        });
                     })
                     .catch(error => {
                         console.error('Erro ao carregar horários:', error);
                     });
             }
+            
             
           
 
